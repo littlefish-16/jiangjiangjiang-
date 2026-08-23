@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="三只蒋蒋 · 每天打卡，天天开心" />
+  <title>三只蒋蒋 · 打卡小站</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='25' fill='%23ffd166'/%3E%3Ccircle cx='22' cy='28' r='3.5' fill='%233b3b4a'/%3E%3Ccircle cx='42' cy='28' r='3.5' fill='%233b3b4a'/%3E%3Cpath d='M29 30 L35 30 L32 37 Z' fill='%23f59a3f'/%3E%3Cpath d='M26 41 Q32 46 38 41' stroke='%23c9896a' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo" id="brandLogo"></div>
+      <div>三只蒋蒋<small>&nbsp;每天都元气满满 ✿</small></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" id="refreshBtn" title="刷新数据"></button>
+      <div class="chip-wrap">
+        <button class="user-chip" id="loginBtn"></button>
+        <div class="menu-pop" id="userMenu" style="display:none;"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- 首页标语 -->
+    <section class="hero">
+      <h1><span class="p1">蒋蒋1</span> · <span class="p2">蒋蒋2</span> · <span class="p3">蒋蒋3</span><br/>今天也要一起打卡呀 ✿</h1>
+      <p>点下面的小可爱，可以给大家设置打卡项目噢～</p>
+      <div class="mascot-row" id="mascotRow"></div>
+    </section>
+
+    <!-- 日历 -->
+    <section class="card calendar-card">
+      <div class="cal-head">
+        <div class="cal-title"><span id="calTitle"></span><span class="yr" id="calYear"></span></div>
+        <div class="cal-nav">
+          <button class="icon-btn" id="calPrev" title="上个月"></button>
+          <button class="btn btn-soft btn-sm" id="calToday">今天</button>
+          <button class="icon-btn" id="calNext" title="下个月"></button>
+        </div>
+      </div>
+      <div class="cal-week" id="calWeek"></div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-legend">
+        <span><span class="dot lit"></span> 全部完成（点亮）</span>
+        <span><span class="dot dim"></span> 打卡中（未完成）</span>
+      </div>
+    </section>
+
+    <!-- 打卡看板 -->
+    <section class="board">
+      <div class="board-head">
+        <div class="board-title">
+          <span class="board-date" id="boardDate"></span>
+          <span id="boardBadge"></span>
+        </div>
+        <div class="cal-nav">
+          <span class="muted" id="boardHint"></span>
+        </div>
+      </div>
+      <div class="columns" id="columns"></div>
+    </section>
+  </main>
+
+  <footer class="footer">三只蒋蒋 · 打卡小站 &nbsp;·&nbsp; 用 <b>GitHub</b> 当小仓库，记录每一天 ✿</footer>
+
+  <div id="modalRoot"></div>
+  <div class="toast-root" id="toastRoot"></div>
+
+  <script src="assets/config.js"></script>
+  <script src="assets/icons.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
