@@ -11,7 +11,14 @@
       "avatar": null
     }
   },
-  "projects": [],
+  "projects": [
+    {
+      "id": "p_1787458148632_511",
+      "member": "jiangjiang2",
+      "title": "单词30个",
+      "order": 0
+    }
+  ],
   "checkins": {
     "2026-08-23": {
       "jiangjiang2": {
