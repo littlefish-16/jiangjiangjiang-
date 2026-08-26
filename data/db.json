@@ -19,12 +19,6 @@
       "order": 0
     },
     {
-      "id": "p_1787479340237_176",
-      "member": "jiangjiang3",
-      "title": "背30个单词",
-      "order": 0
-    },
-    {
       "id": "p_1787485721324_236",
       "member": "jiangjiang1",
       "title": "单词 0.5 list",
@@ -41,6 +35,54 @@
       "member": "jiangjiang1",
       "title": "每日英语听力",
       "order": 2
+    },
+    {
+      "id": "p_1787479340237_176",
+      "member": "jiangjiang3",
+      "title": "背30个单词",
+      "order": 0
+    },
+    {
+      "id": "p_1787767400821_978",
+      "member": "jiangjiang3",
+      "title": "看一节药事法规网课",
+      "order": 1
+    },
+    {
+      "id": "p_1787767422940_678",
+      "member": "jiangjiang3",
+      "title": "背一个长的药事法规知识点（拍照上传）",
+      "order": 2
+    },
+    {
+      "id": "p_1787767432668_242",
+      "member": "jiangjiang3",
+      "title": "看一节药剂学网课",
+      "order": 3
+    },
+    {
+      "id": "p_1787767449165_546",
+      "member": "jiangjiang3",
+      "title": "背一个处方和制作过程（拍照上传）",
+      "order": 4
+    },
+    {
+      "id": "p_1787767467853_499",
+      "member": "jiangjiang3",
+      "title": "看一节药理学网课",
+      "order": 5
+    },
+    {
+      "id": "p_1787767480541_136",
+      "member": "jiangjiang3",
+      "title": "看一章药理学课本",
+      "order": 6
+    },
+    {
+      "id": "p_1787767487318_807",
+      "member": "jiangjiang3",
+      "title": "读一篇论文",
+      "order": 7
     }
   ],
   "checkins": {
