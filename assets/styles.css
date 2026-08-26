@@ -63,6 +63,9 @@ img { display: block; }
 .brand-logo { filter: drop-shadow(0 4px 8px rgba(157, 140, 240, .35)); }
 .brand small { font-family: var(--font-body); font-size: .78rem; color: var(--ink-soft); font-weight: 700; letter-spacing: .3px; }
 .topbar-actions { display: flex; align-items: center; gap: 9px; }
+.site-nav { display:flex; gap:4px; }
+.nav-btn { padding:7px 10px; border-radius:999px; font-weight:800; color:var(--ink-soft); font-size:.8rem; }
+.nav-btn:hover { background:#f5efff; color:var(--brand-3); }
 
 /* ---------- 按钮 ---------- */
 .btn {
@@ -194,6 +197,8 @@ img { display: block; }
 .col-head .cname { font-family: var(--font-head); font-size: 1.18rem; }
 .col-head .cg { color: var(--ink-faint); font-size: .72rem; margin-top: -4px; }
 .col-mood { font-size: 1.7rem; line-height: 1; }
+.col-mood { cursor:pointer; border-radius:12px; padding:2px 6px; }
+.col-mood:hover, .col-msg:not(.empty):hover { box-shadow:0 0 0 2px rgba(157,140,240,.25); }
 .col-mood .label { font-size: .72rem; color: var(--ink-soft); margin-left: 4px; }
 .col-msg {
   margin: 2px 14px 4px; background: var(--soft, #f6f3ff); border-radius: 14px;
@@ -226,6 +231,8 @@ img { display: block; }
 }
 .view-btn:hover { transform: scale(1.05); }
 .view-btn svg { width: 15px; height: 15px; }
+.tiny-comment { color:#998ab8; font-size:.78rem; font-weight:800; padding:5px; border-radius:10px; }
+.tiny-comment:hover { background:#f0ebfb; }
 .col-progress { padding: 0 16px 16px; }
 .progress-track { height: 9px; border-radius: 999px; background: #f0ecf8; overflow: hidden; }
 .progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--col), #bde9d6); transition: width .3s ease; }
@@ -353,6 +360,19 @@ textarea.input { resize: vertical; min-height: 66px; }
 .spin { display: inline-block; width: 20px; height: 20px; border: 3px solid #e6e0f5; border-top-color: var(--brand-3); border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ---------- 新页面：贴纸墙 / 转盘 / 小账本 ---------- */
+.wall { margin-top:26px; }
+.section-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
+.section-head h2 { font-family:var(--font-head); font-size:1.45rem; }
+.section-head p { color:var(--ink-soft); font-size:.84rem; margin-top:3px; }
+.sticker-wall { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:18px; align-items:start; }
+.sticker { position:relative; min-height:150px; padding:20px 15px 13px; border-radius:4px 18px 8px 17px; box-shadow:3px 6px 13px rgba(112,94,150,.16); transform:rotate(-1.5deg); color:#685a77; }
+.sticker.s0 { background:#fff0a8; transform:rotate(-2deg); }.sticker.s1 { background:#ffdce8; transform:rotate(1.2deg); }.sticker.s2 { background:#d9f4e5; transform:rotate(-.6deg); }.sticker.s3 { background:#e6ddff; transform:rotate(2deg); }.sticker.s4 { background:#d8f3fa; transform:rotate(-1deg); }
+.sticker-pin { position:absolute; top:-11px; left:calc(50% - 12px); width:25px; height:25px; padding:2px; border-radius:50%; background:#fff; box-shadow:0 2px 5px rgba(90,70,120,.25); text-align:center; }
+.sticker-meta { font-size:.68rem; color:#927f99; padding-bottom:9px; }.sticker-text { white-space:pre-wrap; word-break:break-word; font-family:var(--font-head); font-size:1rem; line-height:1.55; min-height:47px; }.sticker img { width:100%; border-radius:9px; margin:8px 0; max-height:190px; object-fit:cover; }
+.food-card,.account-card { margin-top:10px; }.wheel-layout { display:grid; grid-template-columns:minmax(240px,1fr) minmax(240px,1fr); gap:32px; align-items:center; }.wheel-wrap { position:relative; width:min(330px,80vw); aspect-ratio:1; margin:auto; }.food-wheel { height:100%; width:100%; border-radius:50%; border:9px solid #fff; box-shadow:var(--shadow),inset 0 0 0 2px #e7dafa; display:flex; align-items:center; justify-content:center; transition:transform 1s cubic-bezier(.15,.8,.18,1); }.food-wheel button { position:relative; z-index:1; height:90px; width:90px; border-radius:50%; background:#fff; box-shadow:var(--shadow-sm); font-family:var(--font-head); font-size:1rem; color:var(--brand); }.wheel-pointer { position:absolute; z-index:2; left:50%; top:-13px; transform:translateX(-50%); font-size:32px; color:#ff9f68; text-shadow:0 2px #fff; }.food-editor { display:flex; flex-direction:column; gap:8px; }.food-editor label { font-family:var(--font-head); font-size:1.2rem; }.food-option { background:#fbf9ff; padding:9px 12px; border-radius:13px; font-weight:700; display:flex; justify-content:space-between; align-items:center; }.food-option button { width:25px; height:25px; border-radius:50%; color:var(--danger); font-size:1.3rem; }.food-option button:hover { background:#ffe7ed; }.food-result { margin:24px auto 0; padding:14px; text-align:center; background:#fff4e9; border-radius:15px; color:#dc8544; font-family:var(--font-head); font-size:1.2rem; max-width:560px; }
+.account-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:15px; }.account-summary div { background:#faf7ff; border-radius:16px; padding:13px; text-align:center; color:var(--ink-soft); font-size:.8rem; }.account-summary b { display:block; font-size:1.15rem; color:var(--ink); margin-top:4px; }.account-form { display:grid; grid-template-columns:100px 1fr 1fr 1fr auto; gap:8px; }.account-list { margin-top:17px; display:flex; flex-direction:column; gap:7px; }.account-row { display:grid; grid-template-columns:100px 100px 1fr; gap:9px; align-items:center; padding:10px 13px; border-radius:13px; background:#fbfaff; }.account-row.expense span { color:#e68199; }.account-row.income span { color:#51af8b; }.account-row small { color:var(--ink-soft); }
+
 /* 响应式 */
 @media (max-width: 720px) {
   .columns { grid-template-columns: 1fr; }
@@ -361,4 +381,5 @@ textarea.input { resize: vertical; min-height: 66px; }
   .brand small { display: none; }
   .mascot-card { padding: 14px 14px 12px; }
   .mascot-card .avatar { width: 68px; height: 68px; }
+  .site-nav { order:3; width:100%; justify-content:center; }.topbar { flex-wrap:wrap; }.wheel-layout { grid-template-columns:1fr; gap:22px; }.account-form { grid-template-columns:1fr 1fr; }.account-form .btn { grid-column:1/-1; justify-content:center; }.account-row { grid-template-columns:90px 75px 1fr; }.section-head { align-items:flex-start; }.section-head .btn { flex:none; }
 }

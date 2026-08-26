@@ -30,6 +30,9 @@ window.JJJ_CONFIG = {
     { emoji: '😐', label: '平静' },
     { emoji: '😴', label: '困困' },
     { emoji: '😢', label: '难过' },
+    { emoji: '😭', label: '哭哭' },
+    { emoji: '🎠', label: '出去玩' },
+    { emoji: '💼', label: '忙' },
     { emoji: '🤒', label: '不舒服' },
     { emoji: '💪', label: '加油' }
   ]

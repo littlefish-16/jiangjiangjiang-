@@ -18,6 +18,11 @@
       <div>三只蒋蒋<small>&nbsp;每天都元气满满 ✿</small></div>
     </div>
     <div class="topbar-actions">
+      <div class="site-nav">
+        <button class="nav-btn" data-act="go-home">打卡</button>
+        <button class="nav-btn" data-act="go-food">今天吃什么</button>
+        <button class="nav-btn" data-act="go-account">小账本</button>
+      </div>
       <button class="btn btn-ghost btn-sm" id="refreshBtn" title="刷新数据"></button>
       <div class="chip-wrap">
         <button class="user-chip" id="loginBtn"></button>
@@ -26,7 +31,7 @@
     </div>
   </header>
 
-  <main class="wrap">
+  <main class="wrap" id="homePage">
     <!-- 首页标语 -->
     <section class="hero">
       <h1><span class="p1">蒋蒋1</span> · <span class="p2">蒋蒋2</span> · <span class="p3">蒋蒋3</span><br/>今天也要一起打卡呀 ✿</h1>
@@ -65,6 +70,23 @@
       </div>
       <div class="columns" id="columns"></div>
     </section>
+
+    <section class="wall card" id="wallSection">
+      <div class="section-head"><div><h2>贴纸留言墙</h2><p>把今天的小心情贴在这里吧 ✿</p></div><button class="btn btn-primary" data-act="wall-add">+ 贴一张留言</button></div>
+      <div class="sticker-wall" id="stickerWall"></div>
+    </section>
+  </main>
+
+  <main class="wrap sub-page" id="foodPage" hidden>
+    <section class="card food-card">
+      <div class="section-head"><div><h2>今天吃什么？</h2><p>先写下想吃的，再让小转盘替你决定～</p></div><button class="btn btn-soft" data-act="go-home">← 回到打卡</button></div>
+      <div class="wheel-layout"><div class="wheel-wrap"><div class="food-wheel" id="foodWheel"><button data-act="spin-food">帮我选！</button></div><div class="wheel-pointer">▼</div></div><div class="food-editor"><label>我的候选菜单</label><div id="foodOptions"></div><div class="input-row"><input class="input" id="foodNewInput" placeholder="例如：番茄牛腩面"/><button class="btn btn-mint" data-act="food-add">添加</button></div><p class="hint">选项由大家共享，点卡片右上角可删除。</p></div></div>
+      <div class="food-result" id="foodResult">今天吃什么呢？转一转吧 🍜</div>
+    </section>
+  </main>
+
+  <main class="wrap sub-page" id="accountPage" hidden>
+    <section class="card account-card"><div class="section-head"><div><h2>我的小账本</h2><p>只会显示你自己的收支记录 ✿</p></div><button class="btn btn-soft" data-act="go-home">← 回到打卡</button></div><div id="accountContent"></div></section>
   </main>
 
   <footer class="footer">三只蒋蒋 · 打卡小站 &nbsp;·&nbsp; 用 <b>GitHub</b> 当小仓库，记录每一天 ✿</footer>

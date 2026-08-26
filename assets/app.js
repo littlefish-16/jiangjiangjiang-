@@ -40,6 +40,10 @@
     pendingAvatar: null,    // { dataUrl, ext }
     pendingMood: null,
     pendingMessage: '',
+    pendingCustomMood: null,
+    pendingWallImage: null,
+    page: 'home',
+    foodRotation: 0,
     retry: null,
     saving: false
   };
@@ -53,7 +57,7 @@
         jiangjiang3: { avatar: null }
       },
       projects: [],
-      checkins: {}
+      checkins: {}, plans: {}, comments: [], wallPosts: [], foodOptions: [], accounts: {}
     };
   }
   function normalizeDb() {
@@ -62,6 +66,11 @@
     cfg.members.forEach(function (m) { db.members[m.id] = db.members[m.id] || { avatar: null }; });
     db.projects = Array.isArray(db.projects) ? db.projects : [];
     db.checkins = db.checkins || {};
+    db.plans = db.plans || {};
+    db.comments = Array.isArray(db.comments) ? db.comments : [];
+    db.wallPosts = Array.isArray(db.wallPosts) ? db.wallPosts : [];
+    db.foodOptions = Array.isArray(db.foodOptions) ? db.foodOptions : [];
+    db.accounts = db.accounts || {};
   }
 
   // ---------- GitHub 存储层 ----------
@@ -156,6 +165,11 @@
   }
   function projectById(id) {
     return (state.db.projects || []).filter(function (p) { return p.id === id; })[0];
+  }
+  function projectsForDay(memberId, dateStr) {
+    var plan = state.db.plans[dateStr] && state.db.plans[dateStr][memberId];
+    if (dateStr > todayStr() && Array.isArray(plan)) return plan;
+    return state.db.projects.filter(function (p) { return p.member === memberId; });
   }
   function ensureDay(memberId, dateStr) {
     var ds = dateStr || todayStr();
@@ -281,19 +295,19 @@
   function renderBoard() {
     var ds = state.viewDate;
     var d = parseDate(ds);
-    var isToday = ds === todayStr();
+    var isToday = ds === todayStr(), isFuture = ds > todayStr();
     $('#boardDate').textContent = d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 星期' + '日一二三四五六'[d.getDay()];
-    $('#boardBadge').innerHTML = isToday ? '<span class="badge-today">今天</span>' : '<span class="badge-history">历史 · 只读</span>';
-    $('#boardHint').textContent = isToday ? '只能给「自己」的打勾噢 ✿' : '';
+    $('#boardBadge').innerHTML = isToday ? '<span class="badge-today">今天</span>' : '<span class="badge-history">' + (isFuture ? '未来 · 计划' : '历史 · 只读') + '</span>';
+    $('#boardHint').textContent = isToday ? '只能给「自己」的打勾噢 ✿' : (isFuture ? '点头像或「设置计划」来安排这一天 ✿' : '点击内容可以留下评论');
     $('#columns').innerHTML = cfg.members.map(function (m) { return columnHTML(m, ds); }).join('');
   }
 
   function columnHTML(member, ds) {
     var checkin = state.db.checkins[ds] && state.db.checkins[ds][member.id];
     var items = (checkin && checkin.items) || {};
-    var projects = state.db.projects.filter(function (p) { return p.member === member.id; })
+    var projects = projectsForDay(member.id, ds)
       .sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
-    var isToday = ds === todayStr();
+    var isToday = ds === todayStr(), isFuture = ds > todayStr();
     var self = state.currentUserId === member.id;
     var mood = checkin && checkin.mood;
     var message = checkin && checkin.message;
@@ -314,24 +328,25 @@
         else if (before) cls = 'ck';
         else cls = 'ck locked';
         var ck = '<button class="' + cls + '" data-act="check" data-mid="' + member.id + '" data-pid="' + p.id + '">' + ICONS.check() + '</button>';
-        var view = it ? '<button class="view-btn" data-act="view" data-img="' + h(it.image) + '" data-title="' + h(p.title) + '">' + ICONS.eye() + ' 查看</button>' : '';
-        return '<div class="project-row' + (it ? ' done' : '') + '">' + ck + '<div class="ptitle">' + h(p.title) + '</div>' + view + '</div>';
+        var view = it && it.image ? '<button class="view-btn" data-act="view" data-img="' + h(it.image) + '" data-title="' + h(p.title) + '">' + ICONS.eye() + ' 查看</button>' : '';
+        var comment = (!isFuture && (it || p)) ? '<button class="tiny-comment" data-act="comment" data-target="checkin" data-mid="' + member.id + '" data-date="' + ds + '" data-pid="' + p.id + '" title="评论">💬</button>' : '';
+        return '<div class="project-row' + (it ? ' done' : '') + '">' + ck + '<div class="ptitle">' + h(p.title) + '</div>' + view + comment + '</div>';
       }).join('');
     }
 
-    var moodPart = mood ? '<div class="col-mood" title="今日心情">' + mood + '</div>'
+    var moodPart = mood ? '<button class="col-mood" data-act="comment" data-target="mood" data-mid="' + member.id + '" data-date="' + ds + '" title="点击评论心情">' + h(typeof mood === 'object' ? mood.emoji : mood) + '</button>'
       : '<div class="col-mood muted" style="font-size:.8rem">还没设置心情</div>';
-    var msg = message ? '<div class="col-msg">' + h(message) + '</div>'
+    var msg = message ? '<button class="col-msg" data-act="comment" data-target="message" data-mid="' + member.id + '" data-date="' + ds + '" title="点击评论留言">' + h(message) + ' <small>💬</small></button>'
       : '<div class="col-msg empty">今天还没有留言～</div>';
     var quick = (isToday && self)
       ? '<div style="text-align:center;margin:2px 0 8px;"><button class="view-btn" data-act="quick-status">' + ICONS.edit() + ' 设置今日状态</button></div>'
-      : '';
+      : (isFuture && state.currentUserId ? '<div style="text-align:center;margin:2px 0 8px;"><button class="view-btn" data-act="plan-open" data-mid="' + member.id + '">✎ 设置计划</button></div>' : '');
 
     return '<div class="column" style="--col:' + member.color + ';--soft:' + member.soft + '">' +
       '<div class="col-head">' +
-      '<div class="avatar" data-act="col-avatar" data-mid="' + member.id + '" title="设置打卡项目">' + avatarHTML(member, 66) + '</div>' +
+      '<div class="avatar" data-act="' + (isFuture ? 'plan-open' : 'col-avatar') + '" data-mid="' + member.id + '" title="' + (isFuture ? '设置未来计划' : '设置打卡项目') + '">' + avatarHTML(member, 66) + '</div>' +
       '<div class="cname">' + h(member.name) + '</div>' +
-      '<div class="cg">点头像设置项目</div>' +
+      '<div class="cg">' + (isFuture ? '点头像设置计划' : '点头像设置项目') + '</div>' +
       moodPart +
       '</div>' +
       msg + quick +
@@ -347,6 +362,41 @@
     renderMascots();
     renderCalendar();
     renderBoard();
+    renderWall();
+    renderFood();
+    renderAccount();
+  }
+
+  function showPage(page) {
+    state.page = page;
+    $('#homePage').hidden = page !== 'home'; $('#foodPage').hidden = page !== 'food'; $('#accountPage').hidden = page !== 'account';
+    if (page === 'account' && !currentMember()) { toast('登录后才能打开自己的小账本'); showPage('home'); openLogin(); }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function renderWall() {
+    var root = $('#stickerWall'); if (!root) return;
+    var posts = state.db.wallPosts.slice().sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
+    root.innerHTML = posts.length ? posts.map(function (p, i) {
+      var m = memberById(p.author);
+      return '<article class="sticker s' + (i % 5) + '"><div class="sticker-pin">✿</div><div class="sticker-meta">' + h(m ? m.name : p.author) + ' · ' + h((p.at || '').replace('T', ' ').slice(0, 16)) + ' ' + h(p.mood || '') + '</div><div class="sticker-text">' + h(p.text) + '</div>' + (p.image ? '<img src="' + h(rawUrl(p.image)) + '" alt="留言照片"/>' : '') + '<button class="tiny-comment" data-act="comment" data-target="wall" data-mid="' + h(p.author) + '" data-wallid="' + h(p.id) + '" title="评论">💬 ' + commentCount('wall', p.id) + '</button></article>';
+    }).join('') : '<div class="col-empty">还没有贴纸，来留下第一张吧～</div>';
+  }
+  function commentCount(type, id) { return state.db.comments.filter(function (c) { return c.target && c.target.type === type && c.target.id === id; }).length; }
+  function renderFood() {
+    var root = $('#foodOptions'), wheel = $('#foodWheel'); if (!root || !wheel) return;
+    var opts = state.db.foodOptions;
+    root.innerHTML = opts.length ? opts.map(function (o) { return '<div class="food-option">' + h(o.name) + '<button data-act="food-delete" data-id="' + h(o.id) + '">×</button></div>'; }).join('') : '<div class="col-empty">先添加几个想吃的吧～</div>';
+    var colors = ['#ffd2b4','#cceedd','#ddd3ff','#ffe6a9','#ffc9dc','#bfe9ef'];
+    var bg = opts.length ? 'conic-gradient(' + opts.map(function (o, i) { var a = i * 360 / opts.length, b = (i + 1) * 360 / opts.length; return colors[i % colors.length] + ' ' + a + 'deg ' + b + 'deg'; }).join(',') + ')' : '#f1edfb';
+    wheel.style.background = bg; wheel.style.transform = 'rotate(' + state.foodRotation + 'deg)';
+    var b = $('button', wheel); if (b) b.style.transform = 'rotate(' + (-state.foodRotation) + 'deg)';
+  }
+  function renderAccount() {
+    var root = $('#accountContent'); if (!root) return;
+    var mid = state.currentUserId; if (!mid) { root.innerHTML = '<div class="col-empty">登录后就能记下自己的小账啦～</div>'; return; }
+    var list = (state.db.accounts[mid] || []).slice().sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
+    var income = list.filter(function(x){return x.type==='income';}).reduce(function(s,x){return s + (+x.amount||0);},0), expense = list.filter(function(x){return x.type!=='income';}).reduce(function(s,x){return s + (+x.amount||0);},0);
+    root.innerHTML = '<div class="account-summary"><div>收入<b>¥' + income.toFixed(2) + '</b></div><div>支出<b>¥' + expense.toFixed(2) + '</b></div><div>结余<b>¥' + (income-expense).toFixed(2) + '</b></div></div><div class="account-form"><select class="input" id="accountType"><option value="expense">支出</option><option value="income">收入</option></select><input class="input" id="accountAmount" type="number" min="0" step="0.01" placeholder="金额"/><input class="input" id="accountCategory" placeholder="分类，如：奶茶"/><input class="input" id="accountNote" placeholder="备注（可选）"/><button class="btn btn-primary" data-act="account-add">记一笔</button></div><div class="account-list">' + (list.length ? list.map(function(x){return '<div class="account-row ' + x.type + '"><span>' + (x.type==='income'?'＋':'－') + ' ¥' + (+x.amount).toFixed(2) + '</span><b>' + h(x.category) + '</b><small>' + h(x.note||'') + ' · ' + h((x.at||'').slice(0,10)) + '</small></div>';}).join('') : '<div class="col-empty">还没有记录，第一笔从这里开始～</div>') + '</div>';
   }
 
   // ============================================================
@@ -368,6 +418,7 @@
     closeModal();
     renderAll();
     toast('欢迎回来，' + memberName(mid) + ' ✿');
+    setTimeout(showNotifications, 250);
   }
   function doLogout() {
     if (!confirm('确定要退出登录吗？')) return;
@@ -540,7 +591,7 @@
     var p = projectById(projectId);
     openModal(modalHead('拍照留影 ✿', ICONS.camera()) +
       '<div class="modal-body">' +
-      '<p class="muted">完成「<b>' + h(p ? p.title : '项目') + '</b>」打卡，需要上传一张图片做凭证（jpg / png）</p>' +
+      '<p class="muted">完成「<b>' + h(p ? p.title : '项目') + '</b>」打卡。照片凭证是可选的（jpg / png）</p>' +
       '<div class="upload-zone" id="uploadZone" data-act="upload-pick">' +
       '<span class="big-ic">' + ICONS.camera() + '</span>' +
       '<span style="font-weight:800;">点这里选择图片</span>' +
@@ -549,7 +600,7 @@
       '<div id="uploadPreview" style="display:none;"></div>' +
       '<div class="input-row">' +
       '<button class="btn btn-ghost" data-act="modal-close" style="flex:1;justify-content:center;">取消</button>' +
-      '<button class="btn btn-primary" id="uploadConfirm" data-act="upload-confirm" style="flex:1;justify-content:center;" disabled>确定打卡</button>' +
+      '<button class="btn btn-primary" id="uploadConfirm" data-act="upload-confirm" style="flex:1;justify-content:center;">确定打卡</button>' +
       '</div></div>');
   }
   function pickUploadFile() { triggerFileInput('image/jpeg,image/png', onUploadFile); }
@@ -570,15 +621,15 @@
   function confirmUpload() {
     if (state.saving) return;
     var u = state.pendingUpload;
-    if (!u || !u.dataUrl) { toast('先选择一张图片哦'); return; }
+    if (!u) return;
     needToken(function () {
       state.saving = true;
       (async function () {
         try {
           var date = todayStr();
           var safe = String(u.projectId).replace(/[^a-zA-Z0-9_-]/g, '');
-          var path = cfg.imagesDir + '/' + date + '/' + u.memberId + '/' + safe + '-' + Date.now() + '.' + u.ext;
-          await uploadImage(path, u.dataUrl, '📷 打卡凭证');
+          var path = null;
+          if (u.dataUrl) { path = cfg.imagesDir + '/' + date + '/' + u.memberId + '/' + safe + '-' + Date.now() + '.' + u.ext; await uploadImage(path, u.dataUrl, '📷 打卡凭证'); }
           ensureDay(u.memberId, date);
           state.db.checkins[date][u.memberId].items[u.projectId] = { done: true, image: path, at: new Date().toISOString() };
           await saveDb('✨ ' + memberName(u.memberId) + ' 完成打卡「' + (projectById(u.projectId) ? projectById(u.projectId).title : '') + '」 ' + date);
@@ -610,6 +661,46 @@
     });
   }
 
+  // ---------- 未来计划 / 评论 / 贴纸墙 ----------
+  function openPlanPanel(mid) {
+    if (!currentMember()) { toast('请先登录才能安排计划'); openLogin(); return; }
+    var ds = state.viewDate;
+    if (ds <= todayStr()) return;
+    var list = state.working && state.working.date === ds && state.working.memberId === mid ? state.working.list : ((state.db.plans[ds] && state.db.plans[ds][mid]) || projectsForDay(mid, ds));
+    var rows = list.map(function(p, i){ return '<div class="proj-item"><span class="idx">' + (i+1) + '</span><input class="input plan-title" data-idx="' + i + '" value="' + h(p.title) + '"/><button class="mini-ic del" data-act="plan-delete" data-idx="' + i + '">×</button></div>'; }).join('');
+    openModal(modalHead(memberName(mid) + ' · ' + ds + ' 的计划', '🗓️') + '<div class="modal-body"><div class="note-box">未来计划可由任意已登录成员安排或修改，到了当天会自动显示在看板上。</div><div id="planRows">' + (rows || '<div class="col-empty">还没有安排，添加一项吧～</div>') + '</div><div class="input-row"><input class="input" id="planNew" placeholder="例如：带水杯出门"/><button class="btn btn-mint" data-act="plan-add">添加</button></div><button class="btn btn-primary" data-act="plan-save">保存未来计划</button></div>');
+    state.working = { memberId: mid, date: ds, list: list.map(function(p){return {id:p.id || ('plan_'+Date.now()),title:p.title};}) };
+  }
+  function planAdd() { var v=$('#planNew').value.trim(); if(!v) return toast('先写下计划内容哦'); state.working.list.push({id:'plan_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),title:v}); openPlanPanel(state.working.memberId); }
+  function planDelete(idx) { state.working.list.splice(+idx,1); openPlanPanel(state.working.memberId); }
+  function savePlan() {
+    var inputs = document.querySelectorAll('.plan-title'); inputs.forEach(function(x){ state.working.list[+x.dataset.idx].title=x.value.trim(); });
+    if (state.working.list.some(function(x){return !x.title;})) return toast('计划内容不能为空哦');
+    var w=state.working; needToken(function(){ (async function(){ try { state.db.plans[w.date]=state.db.plans[w.date]||{}; state.db.plans[w.date][w.memberId]=w.list; await saveDb('🗓️ 更新 '+memberName(w.memberId)+' 的未来计划 '+w.date); closeModal(); renderAll(); toast('未来计划已保存 ✿'); }catch(e){if(e.message!=='NO_TOKEN')toast('保存失败：'+e.message);} })(); });
+  }
+  function openComment(el) {
+    if (!currentMember()) { toast('登录后就可以留言啦'); openLogin(); return; }
+    var target={type:el.dataset.target, memberId:el.dataset.mid||null, date:el.dataset.date||null, projectId:el.dataset.pid||null, id:el.dataset.wallid||null};
+    openModal(modalHead('留一句小纸条', '💬') + '<div class="modal-body"><p class="muted">这条留言会在对方下次打开网站时提醒 TA。</p><textarea id="commentText" class="input" placeholder="写下想说的话吧～"></textarea><button class="btn btn-primary" data-act="comment-save" data-target="' + h(JSON.stringify(target)) + '">发送留言</button></div>');
+  }
+  function saveComment(el) {
+    var text=$('#commentText').value.trim(); if(!text) return toast('写点内容再发送吧'); var target=JSON.parse(el.dataset.target);
+    needToken(function(){ (async function(){try{state.db.comments.push({id:'c_'+Date.now(),target:target,author:state.currentUserId,text:text,at:new Date().toISOString(),readBy:{}});await saveDb('💬 '+memberName(state.currentUserId)+' 留下评论');closeModal();renderAll();toast('小纸条送出啦 ✿');}catch(e){if(e.message!=='NO_TOKEN')toast('发送失败：'+e.message);}})();});
+  }
+  function openWallAdd() {
+    if(!currentMember()){toast('登录后就能贴留言啦');openLogin();return;} state.pendingWallImage=null;
+    openModal(modalHead('贴一张留言', '📌')+'<div class="modal-body"><textarea class="input" id="wallText" placeholder="写下今天的小小分享吧～"></textarea><div class="upload-zone" data-act="wall-image-pick"><span class="big-ic">📷</span><b>添加一张照片（可选）</b></div><div id="wallPreview"></div><button class="btn btn-primary" data-act="wall-save">贴到留言墙</button></div>');
+  }
+  function pickWallImage(){triggerFileInput('image/jpeg,image/png',onWallImage);}
+  async function onWallImage(e){var f=e.target.files[0];if(!f)return;try{state.pendingWallImage=await processImage(f);$('#wallPreview').innerHTML='<div class="upload-preview"><img src="'+state.pendingWallImage.dataUrl+'"/></div>';}catch(x){toast('图片读取失败');}}
+  function saveWall(){var text=$('#wallText').value.trim();if(!text)return toast('写一句话再贴上去吧');needToken(function(){(async function(){try{var image=null;if(state.pendingWallImage){image=cfg.imagesDir+'/wall/'+Date.now()+'.'+state.pendingWallImage.ext;await uploadImage(image,state.pendingWallImage.dataUrl,'📌 留言墙照片');}var ck=state.db.checkins[todayStr()]&&state.db.checkins[todayStr()][state.currentUserId], mood=ck&&ck.mood;state.db.wallPosts.push({id:'w_'+Date.now(),author:state.currentUserId,text:text,image:image,mood:typeof mood==='object'?mood.emoji:(mood||'🌷'),at:new Date().toISOString()});await saveDb('📌 新增留言墙贴纸');closeModal();renderAll();toast('贴好啦 ✿');}catch(e){if(e.message!=='NO_TOKEN')toast('保存失败：'+e.message);}})();});}
+  function addFood(){if(!currentMember()){toast('登录后才可以编辑菜单');openLogin();return;}var v=$('#foodNewInput').value.trim();if(!v)return toast('先写下一个选项吧');needToken(function(){(async function(){try{state.db.foodOptions.push({id:'food_'+Date.now(),name:v});await saveDb('🍜 新增吃什么选项');renderFood();$('#foodNewInput').value='';}catch(e){if(e.message!=='NO_TOKEN')toast('保存失败：'+e.message);}})();});}
+  function deleteFood(id){needToken(function(){(async function(){try{state.db.foodOptions=state.db.foodOptions.filter(function(x){return x.id!==id;});await saveDb('🍜 删除吃什么选项');renderFood();}catch(e){toast('保存失败：'+e.message);}})();});}
+  function spinFood(){var opts=state.db.foodOptions;if(!opts.length)return toast('先添加几个菜单选项吧');var chosen=Math.floor(Math.random()*opts.length), turns=1440+Math.floor(Math.random()*720), target=360-(chosen+.5)*360/opts.length;state.foodRotation+=turns+(target-(state.foodRotation%360));renderFood();setTimeout(function(){$('#foodResult').textContent='今天就吃：'+opts[chosen].name+' ✨';},1050);}
+  function addAccount(){var amount=+$('#accountAmount').value,cat=$('#accountCategory').value.trim();if(!amount||!cat)return toast('请填写金额和分类哦');var mid=state.currentUserId;needToken(function(){(async function(){try{state.db.accounts[mid]=state.db.accounts[mid]||[];state.db.accounts[mid].push({id:'a_'+Date.now(),type:$('#accountType').value,amount:amount,category:cat,note:$('#accountNote').value.trim(),at:new Date().toISOString()});await saveDb('💰 '+memberName(mid)+' 记了一笔账');renderAccount();toast('记好啦 ✿');}catch(e){if(e.message!=='NO_TOKEN')toast('保存失败：'+e.message);}})();});}
+  async function showNotifications() { var mid=state.currentUserId;if(!mid)return;var list=state.db.comments.filter(function(c){return c.author!==mid&&c.target&&c.target.memberId===mid&&!(c.readBy&&c.readBy[mid]);});if(!list.length)return;openModal(modalHead('你有新的小纸条 ✉️','')+'<div class="modal-body">'+list.map(function(c){return '<div class="note-box"><b>来自 '+h(memberName(c.author))+'：</b>'+h(c.text)+'</div>';}).join('')+'<button class="btn btn-primary" data-act="notification-read">我收到啦</button></div>'); }
+  function readNotifications(){var mid=state.currentUserId;state.db.comments.forEach(function(c){if(c.target&&c.target.memberId===mid&&c.author!==mid){c.readBy=c.readBy||{};c.readBy[mid]=true;}});closeModal();if(getToken())saveDb('✉️ 阅读留言提醒').catch(function(){});}
+
   // ============================================================
   //  图片查看
   // ============================================================
@@ -629,7 +720,8 @@
     if (!m) { toast('请先登录'); openLogin(); return; }
     var ck = state.db.checkins[todayStr()] && state.db.checkins[todayStr()][m.id];
     state.pendingAvatar = null;
-    state.pendingMood = ck && ck.mood ? ck.mood : null;
+    state.pendingMood = ck && ck.mood ? (typeof ck.mood === 'object' ? ck.mood.emoji : ck.mood) : null;
+    state.pendingCustomMood = ck && ck.mood && typeof ck.mood === 'object' ? ck.mood : null;
     state.pendingMessage = ck && ck.message ? ck.message : '';
     renderProfileModal(m);
   }
@@ -642,7 +734,7 @@
       '<div class="field"><label>我的头像</label>' +
       '<div class="avatar-preview" id="avatarPreview">' + avatar + '</div>' +
       '<button class="btn btn-soft" data-act="avatar-pick" style="justify-content:center;">' + ICONS.upload() + ' 更换头像</button></div>' +
-      '<div class="field"><label>今日心情</label><div class="mood-grid" id="moodGrid">' + moodGridHTML(m) + '</div></div>' +
+      '<div class="field"><label>今日心情</label><div class="mood-grid" id="moodGrid">' + moodGridHTML(m) + '</div><div class="input-row custom-mood"><input class="input" id="customMoodEmoji" maxlength="8" placeholder="自定义 emoji" value="' + h(state.pendingCustomMood ? state.pendingCustomMood.emoji : '') + '"/><input class="input" id="customMoodLabel" maxlength="16" placeholder="自定义心情名称" value="' + h(state.pendingCustomMood ? state.pendingCustomMood.label : '') + '"/><button class="btn btn-soft" data-act="mood-custom">使用</button></div></div>' +
       '<div class="field"><label>今日留言</label><textarea class="input" id="messageInput" placeholder="写一句想说的话吧～">' + h(state.pendingMessage) + '</textarea></div>' +
       '<div class="input-row"><button class="btn btn-primary" data-act="profile-save" style="flex:1;justify-content:center;">' + ICONS.save() + ' 保存</button></div>' +
       '</div>');
@@ -666,7 +758,14 @@
   }
   function pickMood(emoji) {
     state.pendingMood = emoji;
+    state.pendingCustomMood = null;
     $('#moodGrid').innerHTML = moodGridHTML(currentMember());
+  }
+  function pickCustomMood() {
+    var emoji = $('#customMoodEmoji').value.trim(), label = $('#customMoodLabel').value.trim();
+    if (!emoji || !label) { toast('请填写 emoji 和心情名称哦'); return; }
+    state.pendingMood = emoji; state.pendingCustomMood = { emoji: emoji, label: label };
+    $('#moodGrid').innerHTML = moodGridHTML(currentMember()); toast('已选中自定义心情 ✿');
   }
   function saveProfile() {
     if (state.saving) return;
@@ -683,7 +782,7 @@
           }
           ensureDay(mid, todayStr());
           var day = state.db.checkins[todayStr()][mid];
-          day.mood = state.pendingMood || null;
+          day.mood = state.pendingCustomMood || state.pendingMood || null;
           day.message = (state.pendingMessage || '').trim() || null;
           await saveDb('💬 ' + memberName(mid) + ' 更新今日心情与留言');
           closeModal(); renderAll();
@@ -759,15 +858,20 @@
       case 'menu-token': hideMenu(); openTokenModal(); break;
       case 'logout': hideMenu(); doLogout(); break;
       case 'refresh': (async function () { toast('刷新中…'); await loadDb(true); renderAll(); })(); break;
+      case 'go-home': showPage('home'); break;
+      case 'go-food': showPage('food'); break;
+      case 'go-account': showPage('account'); break;
       case 'cal-prev': state.viewMonth.setMonth(state.viewMonth.getMonth() - 1); renderCalendar(); break;
       case 'cal-next': state.viewMonth.setMonth(state.viewMonth.getMonth() + 1); renderCalendar(); break;
       case 'cal-today': state.viewMonth = new Date(); state.viewDate = todayStr(); renderCalendar(); renderBoard(); break;
-      case 'cal-day':
-        if (el.dataset.date > todayStr()) { toast('未来的日子还没到哦 ✿'); return; }
-        state.viewDate = el.dataset.date; renderCalendar(); renderBoard(); break;
+      case 'cal-day': state.viewDate = el.dataset.date; renderCalendar(); renderBoard(); break;
       case 'mascot': openProjectPanel(el.dataset.mid); break;
       case 'col-avatar': openProjectPanel(el.dataset.mid); break;
       case 'quick-status': openProfile(); break;
+      case 'plan-open': openPlanPanel(el.dataset.mid); break;
+      case 'plan-add': planAdd(); break;
+      case 'plan-delete': planDelete(el.dataset.idx); break;
+      case 'plan-save': savePlan(); break;
       case 'check': onCheckClick(el); break;
       case 'view': openViewImage(el.dataset.img, el.dataset.title); break;
       case 'project-add': addProject(); break;
@@ -781,7 +885,18 @@
       case 'upload-confirm': confirmUpload(); break;
       case 'avatar-pick': pickAvatarFile(); break;
       case 'mood-pick': pickMood(el.dataset.emoji); break;
+      case 'mood-custom': pickCustomMood(); break;
       case 'profile-save': saveProfile(); break;
+      case 'comment': openComment(el); break;
+      case 'comment-save': saveComment(el); break;
+      case 'notification-read': readNotifications(); break;
+      case 'wall-add': openWallAdd(); break;
+      case 'wall-image-pick': pickWallImage(); break;
+      case 'wall-save': saveWall(); break;
+      case 'food-add': addFood(); break;
+      case 'food-delete': deleteFood(el.dataset.id); break;
+      case 'spin-food': spinFood(); break;
+      case 'account-add': addAccount(); break;
       case 'save-token': saveToken(); break;
       case 'open-token': openTokenModal(); break;
       case 'backdrop-close': closeModal(); break;
@@ -823,8 +938,8 @@
     renderTopbar();
     renderMascots();
     await loadDb(false);
-    renderCalendar();
-    renderBoard();
+    renderAll();
+    setTimeout(showNotifications, 350);
   }
 
   init();
