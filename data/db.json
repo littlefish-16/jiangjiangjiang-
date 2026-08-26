@@ -163,7 +163,22 @@
     }
   },
   "plans": {},
-  "comments": [],
+  "comments": [
+    {
+      "id": "c_1787767528583",
+      "target": {
+        "type": "checkin",
+        "memberId": "jiangjiang2",
+        "date": "2026-08-27",
+        "projectId": "p_1787458148632_511",
+        "id": null
+      },
+      "author": "jiangjiang3",
+      "text": "蒋蒋什么时候回来一起打卡呀~(❤ ω ❤)",
+      "at": "2026-08-26T18:05:28.583Z",
+      "readBy": {}
+    }
+  ],
   "wallPosts": [],
   "foodOptions": [
     {
