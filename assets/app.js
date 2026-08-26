@@ -370,7 +370,6 @@
   function showPage(page) {
     state.page = page;
     $('#homePage').hidden = page !== 'home'; $('#foodPage').hidden = page !== 'food'; $('#accountPage').hidden = page !== 'account';
-    if (page === 'account' && !currentMember()) { toast('登录后才能打开自己的小账本'); showPage('home'); openLogin(); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   function renderWall() {
@@ -393,7 +392,7 @@
   }
   function renderAccount() {
     var root = $('#accountContent'); if (!root) return;
-    var mid = state.currentUserId; if (!mid) { root.innerHTML = '<div class="col-empty">登录后就能记下自己的小账啦～</div>'; return; }
+    var mid = state.currentUserId; if (!mid) { root.innerHTML = '<div class="empty-state"><div class="empty-emoji">🔐</div><b>这是每个人自己的小账本</b><p>登录后才会显示并管理你的收支记录。</p><button class="btn btn-primary" data-act="account-login">选择账号登录</button></div>'; return; }
     var list = (state.db.accounts[mid] || []).slice().sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
     var income = list.filter(function(x){return x.type==='income';}).reduce(function(s,x){return s + (+x.amount||0);},0), expense = list.filter(function(x){return x.type!=='income';}).reduce(function(s,x){return s + (+x.amount||0);},0);
     root.innerHTML = '<div class="account-summary"><div>收入<b>¥' + income.toFixed(2) + '</b></div><div>支出<b>¥' + expense.toFixed(2) + '</b></div><div>结余<b>¥' + (income-expense).toFixed(2) + '</b></div></div><div class="account-form"><select class="input" id="accountType"><option value="expense">支出</option><option value="income">收入</option></select><input class="input" id="accountAmount" type="number" min="0" step="0.01" placeholder="金额"/><input class="input" id="accountCategory" placeholder="分类，如：奶茶"/><input class="input" id="accountNote" placeholder="备注（可选）"/><button class="btn btn-primary" data-act="account-add">记一笔</button></div><div class="account-list">' + (list.length ? list.map(function(x){return '<div class="account-row ' + x.type + '"><span>' + (x.type==='income'?'＋':'－') + ' ¥' + (+x.amount).toFixed(2) + '</span><b>' + h(x.category) + '</b><small>' + h(x.note||'') + ' · ' + h((x.at||'').slice(0,10)) + '</small></div>';}).join('') : '<div class="col-empty">还没有记录，第一笔从这里开始～</div>') + '</div>';
@@ -861,6 +860,7 @@
       case 'go-home': showPage('home'); break;
       case 'go-food': showPage('food'); break;
       case 'go-account': showPage('account'); break;
+      case 'account-login': openLogin(); break;
       case 'cal-prev': state.viewMonth.setMonth(state.viewMonth.getMonth() - 1); renderCalendar(); break;
       case 'cal-next': state.viewMonth.setMonth(state.viewMonth.getMonth() + 1); renderCalendar(); break;
       case 'cal-today': state.viewMonth = new Date(); state.viewDate = todayStr(); renderCalendar(); renderBoard(); break;
