@@ -187,7 +187,16 @@
       "readBy": {}
     }
   ],
-  "wallPosts": [],
+  "wallPosts": [
+    {
+      "id": "w_1787804589431",
+      "author": "jiangjiang3",
+      "text": "网站更新好啦，加了好多功能哦～我一定要坚持打卡\n(◦`~´◦)",
+      "image": null,
+      "mood": "⛽",
+      "at": "2026-08-27T04:23:09.431Z"
+    }
+  ],
   "foodOptions": [
     {
       "id": "food_1787767095005",
