@@ -365,7 +365,7 @@ textarea.input { resize: vertical; min-height: 66px; }
 .section-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
 .section-head h2 { font-family:var(--font-head); font-size:1.45rem; }
 .section-head p { color:var(--ink-soft); font-size:.84rem; margin-top:3px; }
-.sticker-wall { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:18px; align-items:start; }
+.sticker-wall { display:grid; grid-template-columns:repeat(2,minmax(0,340px)); justify-content:center; gap:22px; align-items:start; }
 .sticker { position:relative; min-height:150px; padding:20px 15px 13px; border-radius:4px 18px 8px 17px; box-shadow:3px 6px 13px rgba(112,94,150,.16); transform:rotate(-1.5deg); color:#685a77; }
 .sticker.s0 { background:#fff0a8; transform:rotate(-2deg); }.sticker.s1 { background:#ffdce8; transform:rotate(1.2deg); }.sticker.s2 { background:#d9f4e5; transform:rotate(-.6deg); }.sticker.s3 { background:#e6ddff; transform:rotate(2deg); }.sticker.s4 { background:#d8f3fa; transform:rotate(-1deg); }
 .sticker-pin { position:absolute; top:-11px; left:calc(50% - 12px); width:25px; height:25px; padding:2px; border-radius:50%; background:#fff; box-shadow:0 2px 5px rgba(90,70,120,.25); text-align:center; }
@@ -382,5 +382,5 @@ textarea.input { resize: vertical; min-height: 66px; }
   .brand small { display: none; }
   .mascot-card { padding: 14px 14px 12px; }
   .mascot-card .avatar { width: 68px; height: 68px; }
-  .site-nav { order:3; width:100%; justify-content:center; }.topbar { flex-wrap:wrap; }.wheel-layout { grid-template-columns:1fr; gap:22px; }.account-form { grid-template-columns:1fr 1fr; }.account-form .btn { grid-column:1/-1; justify-content:center; }.account-row { grid-template-columns:90px 75px 1fr; }.section-head { align-items:flex-start; }.section-head .btn { flex:none; }
+  .site-nav { order:3; width:100%; justify-content:center; }.topbar { flex-wrap:wrap; }.wheel-layout { grid-template-columns:1fr; gap:22px; }.account-form { grid-template-columns:1fr 1fr; }.account-form .btn { grid-column:1/-1; justify-content:center; }.account-row { grid-template-columns:90px 75px 1fr; }.section-head { align-items:flex-start; }.section-head .btn { flex:none; }.sticker-wall { grid-template-columns:1fr; max-width:340px; margin:0 auto; }
 }
