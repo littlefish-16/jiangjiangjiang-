@@ -198,7 +198,9 @@
       "author": "jiangjiang3",
       "text": "蒋蒋1好厉害～٩(*´◒`*)۶",
       "at": "2026-08-27T04:27:24.437Z",
-      "readBy": {}
+      "readBy": {
+        "jiangjiang1": true
+      }
     }
   ],
   "wallPosts": [
