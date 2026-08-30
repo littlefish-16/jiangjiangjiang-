@@ -19,24 +19,6 @@
       "order": 0
     },
     {
-      "id": "p_1787485721324_236",
-      "member": "jiangjiang1",
-      "title": "单词 0.5 list",
-      "order": 0
-    },
-    {
-      "id": "p_1787488821584_777",
-      "member": "jiangjiang1",
-      "title": "去健身房跑跑步/动一动",
-      "order": 1
-    },
-    {
-      "id": "p_1787541481662_409",
-      "member": "jiangjiang1",
-      "title": "每日英语听力",
-      "order": 2
-    },
-    {
       "id": "p_1787479340237_176",
       "member": "jiangjiang3",
       "title": "背30个单词",
@@ -83,6 +65,24 @@
       "member": "jiangjiang3",
       "title": "读一篇论文",
       "order": 7
+    },
+    {
+      "id": "p_1787485721324_236",
+      "member": "jiangjiang1",
+      "title": "单词 1 list",
+      "order": 0
+    },
+    {
+      "id": "p_1787488821584_777",
+      "member": "jiangjiang1",
+      "title": "去健身房跑跑步/动一动",
+      "order": 1
+    },
+    {
+      "id": "p_1787541481662_409",
+      "member": "jiangjiang1",
+      "title": "每日英语听力",
+      "order": 2
     }
   ],
   "checkins": {
